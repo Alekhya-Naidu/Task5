@@ -1,0 +1,58 @@
+[
+  {
+    "EmpNo": 111,
+    "FirstName": "Alekhya",
+    "LastName": "Naidu",
+    "Dob": "2002-03-02T00:00:00",
+    "Mail": "alekhya@gmail.com",
+    "MobileNumber": 1234567890,
+    "JoiningDate": "2004-03-03T00:00:00",
+    "Location": 1,
+    "Department": 0,
+    "Role": 0,
+    "Manager": 0,
+    "Project": 0
+  },
+  {
+    "EmpNo": 123,
+    "FirstName": "Harry",
+    "LastName": "Potter",
+    "Dob": "2002-05-03T00:00:00",
+    "Mail": "harry.p@gmail.com",
+    "MobileNumber": 9876567890,
+    "JoiningDate": "2002-02-02T00:00:00",
+    "Location": 2,
+    "Department": 0,
+    "Role": 1,
+    "Manager": 1,
+    "Project": 1
+  },
+  {
+    "EmpNo": 3,
+    "FirstName": "f",
+    "LastName": "r",
+    "Dob": "2006-03-04T00:00:00",
+    "Mail": "@.fch",
+    "MobileNumber": 9191919191,
+    "JoiningDate": "2004-03-03T00:00:00",
+    "Location": 2,
+    "Department": 1,
+    "Role": 2,
+    "Manager": 2,
+    "Project": 0
+  },
+  {
+    "EmpNo": 756,
+    "FirstName": "Hermoine ",
+    "LastName": "Granger",
+    "Dob": "1999-06-04T00:00:00",
+    "Mail": "hermoine.g@tezo.com",
+    "MobileNumber": 9192939495,
+    "JoiningDate": "2006-04-03T00:00:00",
+    "Location": 0,
+    "Department": 1,
+    "Role": 1,
+    "Manager": 0,
+    "Project": 0
+  }
+]
