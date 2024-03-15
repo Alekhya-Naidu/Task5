@@ -4,116 +4,149 @@ using System.IO;
 using System.Text.Json;
 
 namespace EmployeeManagement;
-class EmployeeManager
+
+public class EmployeeBAL : IBAL
 {
-    private readonly string fileName = "EmployeesData.json";
-    private readonly ILogger ilogger;
-    public EmployeeManager(ILogger logger)
+    public readonly IDAL _dal;
+    public readonly ILogger _logger;
+    public EmployeeBAL(IDAL dal, ILogger logger)
     {
-        ilogger = logger;
+        _dal = dal;
+        _logger = logger;
     }
-    public void AddEmployee(ILogger logger)
+
+    public void Add(Employee employee)
     {
-        Program program = new Program(logger);
-        EmployeeManagementSystem.Employee employeeData =  program.EmployeeDataInput();
-        if(employeeData != null && employeeData.EmpNo != 0)
+        if(!(ValidateEmployeeInputData(employee)))
         {
-            ilogger.LogSuccessful("Employee added successfully.");
-            SaveEmployeesToJson(employeeData);
+            _logger.LogError("Invalid Input");
+            return;
+        }
+        try
+        {
+            _dal.Insert(employee);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Failed to add employee: {ex.Message}");
         }
     }
-    public void SaveEmployeesToJson(EmployeeManagementSystem.Employee employee)
-    {
-        string appSettingsPath = "appSettings.json";
-        if (File.Exists(appSettingsPath))
-        {
-            string appSettingsJson = File.ReadAllText(appSettingsPath);
-            JsonDocument settings = JsonDocument.Parse(appSettingsJson);
-            JsonElement root = settings.RootElement;
 
-            if (root.TryGetProperty("EmployeeDataFilePath", out JsonElement FilePath))
+    public void Update(Employee updatedEmployee)
+    {
+        List<Employee> existingEmployees = _dal.Get();
+        Employee existingEmployee = existingEmployees.FirstOrDefault(emp => emp.EmpNo == updatedEmployee.EmpNo);
+        if (!(ValidateEmployeeInputData(updatedEmployee)))
+        {
+            _logger.LogError("Invalid Input");
+            return;
+        }
+        if (existingEmployee != null)
+        {
+            existingEmployee.FirstName = updatedEmployee.FirstName;
+            existingEmployee.LastName = updatedEmployee.LastName;
+            existingEmployee.Dob = updatedEmployee.Dob;
+            existingEmployee.Mail = updatedEmployee.Mail;
+            existingEmployee.MobileNumber = updatedEmployee.MobileNumber;
+            existingEmployee.JoiningDate = updatedEmployee.JoiningDate;
+            existingEmployee.Location = updatedEmployee.Location;
+            existingEmployee.Department = updatedEmployee.Department;
+            existingEmployee.Role = updatedEmployee.Role;
+            existingEmployee.Manager = updatedEmployee.Manager;
+            existingEmployee.Project = updatedEmployee.Project;
+             try
             {
-                string filePath = FilePath.GetString();
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    List<EmployeeManagementSystem.Employee> existingEmployees = GetDataStored(filePath);
-                    existingEmployees.Add(employee);
-                    Update(filePath, existingEmployees);
-                }
+                _dal.Update(existingEmployees);
             }
-            else
+            catch (Exception ex)
             {
-                ilogger.LogError("EmployeeDataFilePath is missing in appSettings.json");
+                _logger.LogError($"Failed to update employee: {ex.Message}");
             }
         }
         else
         {
-            ilogger.LogError("App settings file not found.");
+            _logger.LogError($"Employee with EmpNo {updatedEmployee.EmpNo} not found.");
         }
     }
-    public List<EmployeeManagementSystem.Employee> GetDataStored(string filePath)
-    {
-        List<EmployeeManagementSystem.Employee> existingEmployees = new List<EmployeeManagementSystem.Employee>();
-        if (File.Exists(filePath))
-        {
-            string json = File.ReadAllText(filePath);
-            existingEmployees = JsonSerializer.Deserialize<List<EmployeeManagementSystem.Employee>>(json) ?? new List<EmployeeManagementSystem.Employee>();
-        }
-        return existingEmployees;
-    }
-    public void Update(string filePath, List<EmployeeManagementSystem.Employee> existingEmployees)
-    {
-        JsonSerializerOptions options = new JsonSerializerOptions
-        {
-            WriteIndented = true
-        };
-        string updatedJson = JsonSerializer.Serialize(existingEmployees, options);
-        File.WriteAllText(filePath, updatedJson);
-    }
-    public void DeleteEmployee(params int[] empNos)
-    {
-        List<EmployeeManagementSystem.Employee> existingEmployees = GetDataStored(fileName);
-        if (existingEmployees.Count > 0)
-        {
-            bool deleted = false;
-            ilogger.LogMsg("Do you want to delete (y/n)? :" );
-            char confirm = Console.ReadKey().KeyChar;
-            char confirmStatus = Char.ToLower(confirm);
-            ilogger.LogMsg("");
 
-            if(confirmStatus == 'y')
-            {
-                foreach (int empNo in empNos)
-                {
-                    EmployeeManagementSystem.Employee employeeToRemove = existingEmployees.Find(emp => emp.EmpNo == empNo);
-                    if (employeeToRemove != null)
-                    {
-                        existingEmployees.Remove(employeeToRemove);
-                        deleted = true;
-                        ilogger.LogSuccessful("Employee with empNo "+empNo+" deleted successfully");
-                    }
-                    else
-                    {
-                        ilogger.LogError("Employee with empNo " + empNo +" not found.");
-                    }
-                }
-                if (deleted)
-                {
-                    Update(fileName, existingEmployees);
-                }
-                else
-                {
-                    ilogger.LogError("No employees found.");
-                }
-            }
-        } 
-        else
+    public void Delete(IEnumerable<int> empNos)
+    {
+        foreach(var emp in empNos)
+        { 
+            _dal.Delete(emp);
+        }
+    }
+    
+    public bool ValidateEmployeeInputData(Employee employee)
+    {
+        if(employee == null || employee.EmpNo <= 0)
         {
-            ilogger.LogError("No employees to delete");
-        }  
-       
+            return false;
+        }
+        if (string.IsNullOrWhiteSpace(employee.FirstName) || string.IsNullOrWhiteSpace(employee.LastName))
+        {
+            return false; 
+        }
+        if(string.IsNullOrWhiteSpace(employee.Mail) || !(employee.Mail.Contains("@") && employee.Mail.Contains(".")))
+        {
+            return false;
+        }
+        if(Math.Floor(Math.Log10(employee.MobileNumber) + 1) != 10)
+        {
+            return false;
+        }
+        if(!Enum.IsDefined(typeof(Location), employee.Location))
+        {
+            return false;
+        }
+        if(!Enum.IsDefined(typeof(Department), employee.Department))
+        {
+            return false;
+        }
+        if(!Enum.IsDefined(typeof(Role), employee.Role))
+        {
+            return false;
+        }
+        if (!Enum.IsDefined(typeof(Manager), employee.Manager))
+        {
+            return false;
+        }
+        if (!Enum.IsDefined(typeof(Project), employee.Project))
+        {
+            return false;
+        }
+        return true;
+    }
+
+    public List<Employee> Filter(List<string> filters)
+    {
+        List<Employee> employees = _dal.Get();
+        List<Employee> filteredEmps = new List<Employee>();
+
+        foreach (var emp in employees)
+        {
+            bool isFiltered = false;
+            foreach (var filter in filters)
+            {
+                if (emp.FirstName.ToLower().StartsWith(filter.ToLower()) ||
+                    emp.Location.ToString().ToLower() == filter.ToLower() ||
+                    emp.Department.ToString().ToLower() == filter.ToLower() ||
+                    emp.EmpNo.ToString().ToLower() == filter.ToLower())
+                    {
+                        isFiltered = true;
+                        break;
+                    }
+            }
+            if (isFiltered)
+            {
+                filteredEmps.Add(emp);
+            }
+        }
+        return filteredEmps;
+    }
+
+    public List<Employee> GetAllEmployees()
+    {
+        return _dal.Get();
     }
 }
-
-    
-
