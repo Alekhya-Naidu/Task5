@@ -91,7 +91,7 @@ public class EmployeeBAL : IBAL
         {
             return false;
         }
-        if(Math.Floor(Math.Log10(employee.MobileNumber) + 1) != 10)
+        if(employee.MobileNumber.Length != 10)
         {
             return false;
         }

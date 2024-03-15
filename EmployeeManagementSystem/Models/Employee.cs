@@ -10,7 +10,7 @@ public class Employee
     public string? LastName { get; set; }
     public DateTime Dob { get; set; }
     public string? Mail { get; set;}
-    public long MobileNumber { get; set;}
+    public string MobileNumber { get; set;}
     public DateTime JoiningDate { get; set;}
     public Location Location { get; set; }
     public Department Department { get; set; }
