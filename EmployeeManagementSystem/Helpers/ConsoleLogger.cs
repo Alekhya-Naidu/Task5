@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 namespace EmployeeManagement;
-public class LoggerHandler : ILogger
+public class ConsoleLogger : ILogger
 {
     public void LogMsg(string message)
     {

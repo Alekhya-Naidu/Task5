@@ -21,7 +21,7 @@ class Program
         Parser.Default.ParseArguments<Options>(args)
         .WithParsed(options =>
         {
-            ILogger logger = new LoggerHandler();
+            ILogger logger = new ConsoleLogger();
             IBAL bal = new EmployeeBAL(new EmployeeDAL(logger), logger);
             Program program = new Program(bal, logger);
             if(options.Add)
