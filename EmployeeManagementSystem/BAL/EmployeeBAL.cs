@@ -8,18 +8,18 @@ namespace EmployeeManagement;
 public class EmployeeBAL : IBAL
 {
     public readonly IDAL _dal;
-    public readonly ILogger _logger;
-    public EmployeeBAL(IDAL dal, ILogger logger)
+    public readonly ILogger _console;
+    public EmployeeBAL(IDAL dal, ILogger console)
     {
         _dal = dal;
-        _logger = logger;
+        _console = console;
     }
 
     public void Add(Employee employee)
     {
         if(!(ValidateEmployeeInputData(employee)))
         {
-            _logger.LogError("Invalid Input");
+            _console.LogError("Invalid Input");
             return;
         }
         try
@@ -28,7 +28,7 @@ public class EmployeeBAL : IBAL
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Failed to add employee: {ex.Message}");
+            _console.LogError($"Failed to add employee: {ex.Message}");
         }
     }
 
@@ -38,7 +38,7 @@ public class EmployeeBAL : IBAL
         Employee existingEmployee = existingEmployees.FirstOrDefault(emp => emp.EmpNo == updatedEmployee.EmpNo);
         if (!(ValidateEmployeeInputData(updatedEmployee)))
         {
-            _logger.LogError("Invalid Input");
+            _console.LogError("Invalid Input");
             return;
         }
         if (existingEmployee != null)
@@ -60,12 +60,12 @@ public class EmployeeBAL : IBAL
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Failed to update employee: {ex.Message}");
+                _console.LogError($"Failed to update employee: {ex.Message}");
             }
         }
         else
         {
-            _logger.LogError($"Employee with EmpNo {updatedEmployee.EmpNo} not found.");
+            _console.LogError($"Employee with EmpNo {updatedEmployee.EmpNo} not found.");
         }
     }
 

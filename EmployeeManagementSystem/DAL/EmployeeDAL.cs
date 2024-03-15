@@ -7,11 +7,11 @@ namespace EmployeeManagement;
 
 public class EmployeeDAL : IDAL
 {
-    private readonly ILogger _logger;
+    private readonly ILogger _console;
     private readonly string _filePath;
-    public EmployeeDAL(ILogger logger)
+    public EmployeeDAL(ILogger console)
     {
-        _logger = logger;
+        _console = console;
         _filePath = GetFilePath();
     }
 
@@ -43,7 +43,7 @@ public class EmployeeDAL : IDAL
         }
         else
         {
-            _logger.LogError("Employee with EmpNo "+ empNo+" is not found");
+            _console.LogError("Employee with EmpNo "+ empNo+" is not found");
         }
     }
 
@@ -72,11 +72,11 @@ public class EmployeeDAL : IDAL
                     return settings["EmployeeDataFilePath"];
                 }
             }
-            _logger.LogError("Employee data file path not found in app settings.");
+            _console.LogError("Employee data file path not found in app settings.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error reading app settings: {ex.Message}");
+            _console.LogError($"Error reading app settings: {ex.Message}");
         }
         return null;
     }

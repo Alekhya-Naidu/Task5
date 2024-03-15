@@ -8,12 +8,12 @@ namespace EmployeeManagement;
 class Program
 {   
     private readonly IBAL _bal;
-    private readonly ILogger ilogger;
+    private readonly ILogger _console;
     private readonly string filePath = "";
-    public Program(IBAL bal, ILogger logger)
+    public Program(IBAL bal, ILogger console)
     {
         _bal = bal;
-        ilogger = logger;
+        _console = console;
     }
     
     public static void Main(string[] args)
@@ -21,9 +21,9 @@ class Program
         Parser.Default.ParseArguments<Options>(args)
         .WithParsed(options =>
         {
-            ILogger logger = new ConsoleLogger();
-            IBAL bal = new EmployeeBAL(new EmployeeDAL(logger), logger);
-            Program program = new Program(bal, logger);
+            ILogger console = new ConsoleLogger();
+            IBAL bal = new EmployeeBAL(new EmployeeDAL(console), console);
+            Program program = new Program(bal, console);
             if(options.Add)
             {
                 program._bal.Add(program.EmployeeDataInput());
@@ -47,51 +47,51 @@ class Program
             }
             else
             {
-                program.ilogger.LogError("Invalid Command");
+                program._console.LogError("Invalid Command");
             }
         });
     }
 
     public Employee EmployeeDataInput()
     {
-        ilogger.LogInfo("Employee Number: ");
+        _console.LogInfo("Employee Number: ");
         int empNo = int.Parse(Console.ReadLine()?? "0" );
 
-        ilogger.LogInfo("First Name: ");
+        _console.LogInfo("First Name: ");
         string firstName = (Console.ReadLine()?? "");
 
-        ilogger.LogInfo("Last Name: ");
+        _console.LogInfo("Last Name: ");
         string lastName = (Console.ReadLine()?? "");
 
-        ilogger.LogInfo("Date of Birth (MM-DD-YYYY): ");
+        _console.LogInfo("Date of Birth (MM-DD-YYYY): ");
         DateTime dob = DateTime.Parse(Console.ReadLine() ?? "0000-00-00");
 
-        ilogger.LogInfo("Email: ");
+        _console.LogInfo("Email: ");
         string mail = (Console.ReadLine()?? "");
 
-        ilogger.LogInfo("Mobile Number: ");
+        _console.LogInfo("Mobile Number: ");
         string mobileNumber = (Console.ReadLine() ?? "0");
 
-        ilogger.LogInfo("Joining Date (MM-DD-YYYY): ");
+        _console.LogInfo("Joining Date (MM-DD-YYYY): ");
         DateTime joiningDate = DateTime.Parse(Console.ReadLine() ?? "0000-00-00");
 
-        ilogger.LogInfo("Location: (Hyderabad, US, UK)");
+        _console.LogInfo("Location: (Hyderabad, US, UK)");
         Location Location;
         Enum.TryParse(Console.ReadLine(), ignoreCase: true, out Location);
         
-        ilogger.LogInfo("Department: (PE, IT)");
+        _console.LogInfo("Department: (PE, IT)");
         Department Department;
         Enum.TryParse(Console.ReadLine(), ignoreCase: true, out Department);
         
-        ilogger.LogInfo("Role: (Intern, Developer, Admin)");
+        _console.LogInfo("Role: (Intern, Developer, Admin)");
         Role Role;
         Enum.TryParse(Console.ReadLine(), ignoreCase: true, out Role);
         
-        ilogger.LogInfo("Manager: (Hasnu, Sandeep, Bhagvan)");
+        _console.LogInfo("Manager: (Hasnu, Sandeep, Bhagvan)");
         Manager Manager;
         Enum.TryParse(Console.ReadLine(), ignoreCase: true, out Manager);
         
-        ilogger.LogInfo("Project: (p1, p2)");
+        _console.LogInfo("Project: (p1, p2)");
         Project Project;
         Enum.TryParse(Console.ReadLine(), ignoreCase: true, out Project);
         
@@ -117,7 +117,7 @@ class Program
     {
         if (employees.Count == 0)
         {
-            ilogger.LogError("No employees found");
+            _console.LogError("No employees found");
             return;
         }
         foreach (var employee in employees)
@@ -128,16 +128,16 @@ class Program
 
     public void FilterAndDisplay()
     {
-        ilogger.LogInfo("Enter Alphabet");
+        _console.LogInfo("Enter Alphabet");
         string alphabetFilter = Console.ReadLine();
     
-        ilogger.LogInfo("Enter Location");
+        _console.LogInfo("Enter Location");
         string locationFilter = Console.ReadLine();
     
-        ilogger.LogInfo("Enter Department");
+        _console.LogInfo("Enter Department");
         string departmentFilter = Console.ReadLine();
     
-        ilogger.LogInfo("Enter EmpNo to search");
+        _console.LogInfo("Enter EmpNo to search");
         string empNoFilter = Console.ReadLine();
 
         List<string> filters = new List<string>();
@@ -156,44 +156,44 @@ class Program
 
     public Employee Update()
     {
-        ilogger.LogInfo("Employee Number: ");
+        _console.LogInfo("Employee Number: ");
         int empNo = int.Parse(Console.ReadLine()?? "0" );
 
-        ilogger.LogInfo("First Name: ");
+        _console.LogInfo("First Name: ");
         string firstName = (Console.ReadLine()?? "");
 
-        ilogger.LogInfo("Last Name: ");
+        _console.LogInfo("Last Name: ");
         string lastName = (Console.ReadLine()?? "");
 
-        ilogger.LogInfo("Date of Birth (MM-DD-YYYY): ");
+        _console.LogInfo("Date of Birth (MM-DD-YYYY): ");
         DateTime dob = DateTime.Parse(Console.ReadLine() ?? "0000-00-00");
 
-        ilogger.LogInfo("Email: ");
+        _console.LogInfo("Email: ");
         string mail = (Console.ReadLine()?? "");
 
-        ilogger.LogInfo("Mobile Number: ");
+        _console.LogInfo("Mobile Number: ");
         string mobileNumber = (Console.ReadLine() ?? "0");
 
-        ilogger.LogInfo("Joining Date (MM-DD-YYYY): ");
+        _console.LogInfo("Joining Date (MM-DD-YYYY): ");
         DateTime joiningDate = DateTime.Parse(Console.ReadLine() ?? "0000-00-00");
 
-        ilogger.LogInfo("Location: (Hyderabad, US, UK)");
+        _console.LogInfo("Location: (Hyderabad, US, UK)");
         Location Location;
         Enum.TryParse(Console.ReadLine(), ignoreCase: true, out Location);
         
-        ilogger.LogInfo("Department: (PE, IT)");
+        _console.LogInfo("Department: (PE, IT)");
         Department Department;
         Enum.TryParse(Console.ReadLine(), ignoreCase: true, out Department);
         
-        ilogger.LogInfo("Role: (Intern, Developer, Admin)");
+        _console.LogInfo("Role: (Intern, Developer, Admin)");
         Role Role;
         Enum.TryParse(Console.ReadLine(), ignoreCase: true, out Role);
         
-        ilogger.LogInfo("Manager: (Hasnu, Sandeep, Bhagvan)");
+        _console.LogInfo("Manager: (Hasnu, Sandeep, Bhagvan)");
         Manager Manager;
         Enum.TryParse(Console.ReadLine(), ignoreCase: true, out Manager);
         
-        ilogger.LogInfo("Project: (p1, p2)");
+        _console.LogInfo("Project: (p1, p2)");
         Project Project;
         Enum.TryParse(Console.ReadLine(), ignoreCase: true, out Project);
         
