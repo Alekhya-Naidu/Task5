@@ -8,7 +8,7 @@
 
 # Running the Application
 1. First navigate to the project directory
-    `cd employee-management-system`
+    -`cd employee-management-system`
 2. For Adding new employee details
     `dotnet run --add (or) dotnet run -a`
 3. For Updating existing employee details
