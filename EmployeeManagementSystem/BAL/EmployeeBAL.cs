@@ -5,79 +5,68 @@ using System.Text.Json;
 
 namespace EmployeeManagement;
 
-public class EmployeeBAL : IBAL
+public class EmployeeBAL : IEmployeeBAL
 {
-    public readonly IDAL _dal;
-    public readonly ILogger _console;
-    public EmployeeBAL(IDAL dal, ILogger console)
+    public readonly IEmployeeDAL _employeeDal;
+    public readonly ILogger _logger;
+    
+    public EmployeeBAL(IEmployeeDAL employeeDAL, ILogger logger)
     {
-        _dal = dal;
-        _console = console;
+        _employeeDal = employeeDAL;
+        _logger = logger;
     }
 
-    public void Add(Employee employee)
+    public bool Add(Employee employee)
     {
         if(!(ValidateEmployeeInputData(employee)))
         {
-            _console.LogError("Invalid Input");
-            return;
+            return false;
         }
         try
         {
-            _dal.Insert(employee);
+            return _employeeDal.Insert(employee);
         }
         catch (Exception ex)
         {
-            _console.LogError($"Failed to add employee: {ex.Message}");
+            return false;
         }
     }
 
-    public void Update(Employee updatedEmployee)
+    public bool Update(Employee updatedEmployee)
     {
-        List<Employee> existingEmployees = _dal.Get();
+        List<Employee> existingEmployees = _employeeDal.GetAll();
         Employee existingEmployee = existingEmployees.FirstOrDefault(emp => emp.EmpNo == updatedEmployee.EmpNo);
         if (!(ValidateEmployeeInputData(updatedEmployee)))
         {
-            _console.LogError("Invalid Input");
-            return;
+            return false;
         }
         if (existingEmployee != null)
         {
-            existingEmployee.FirstName = updatedEmployee.FirstName;
-            existingEmployee.LastName = updatedEmployee.LastName;
-            existingEmployee.Dob = updatedEmployee.Dob;
-            existingEmployee.Mail = updatedEmployee.Mail;
-            existingEmployee.MobileNumber = updatedEmployee.MobileNumber;
-            existingEmployee.JoiningDate = updatedEmployee.JoiningDate;
-            existingEmployee.Location = updatedEmployee.Location;
-            existingEmployee.Department = updatedEmployee.Department;
-            existingEmployee.Role = updatedEmployee.Role;
-            existingEmployee.Manager = updatedEmployee.Manager;
-            existingEmployee.Project = updatedEmployee.Project;
-             try
-            {
-                _dal.Update(existingEmployees);
-            }
-            catch (Exception ex)
-            {
-                _console.LogError($"Failed to update employee: {ex.Message}");
-            }
+            return _employeeDal.Update(updatedEmployee);
         }
-        else
+        return true;
+    }
+
+    public bool Delete(IEnumerable<int> empNos)
+    {
+        try
         {
-            _console.LogError($"Employee with EmpNo {updatedEmployee.EmpNo} not found.");
+            foreach (var empNo in empNos)
+            {
+                if (!_employeeDal.Delete(empNo))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        catch (Exception ex)
+        {
+            return false;
         }
     }
 
-    public void Delete(IEnumerable<int> empNos)
-    {
-        foreach(var emp in empNos)
-        { 
-            _dal.Delete(emp);
-        }
-    }
-    
-    public bool ValidateEmployeeInputData(Employee employee)
+    private bool ValidateEmployeeInputData(Employee employee)
     {
         if(employee == null || employee.EmpNo <= 0)
         {
@@ -91,62 +80,57 @@ public class EmployeeBAL : IBAL
         {
             return false;
         }
-        if(employee.MobileNumber.Length != 10)
+        if(employee.MobileNumber.Length > 1)
         {
-            return false;
+            if(employee.MobileNumber.Length != 10)
+                return false;
         }
-        if(!Enum.IsDefined(typeof(Location), employee.Location))
+        if(employee.Location != 0)
         {
-            return false;
+            if(!Enum.IsDefined(typeof(Location), employee.Location))
+            {
+                return false;
+            }
+            return true;
         }
-        if(!Enum.IsDefined(typeof(Department), employee.Department))
+        if(employee.Department != 0)
         {
-            return false;
+            if(!Enum.IsDefined(typeof(Department), employee.Department))
+            {
+                return false;
+            }
         }
-        if(!Enum.IsDefined(typeof(Role), employee.Role))
+        if(employee.Role != 0)
         {
-            return false;
+            if(!Enum.IsDefined(typeof(Role), employee.Role))
+            {
+                return false;
+            }
         }
-        if (!Enum.IsDefined(typeof(Manager), employee.Manager))
+        if(employee.Manager != 0)
         {
-            return false;
+            if (!Enum.IsDefined(typeof(Manager), employee.Manager))
+            {
+                return false;
+            }
         }
-        if (!Enum.IsDefined(typeof(Project), employee.Project))
+        if(employee.Project != 0)
         {
-            return false;
+            if (!Enum.IsDefined(typeof(Project), employee.Project))
+            {
+                return false;
+            }
         }
         return true;
     }
 
-    public List<Employee> Filter(List<string> filters)
+    public List<Employee> Filter(EmployeeFilter filters)
     {
-        List<Employee> employees = _dal.Get();
-        List<Employee> filteredEmps = new List<Employee>();
-
-        foreach (var emp in employees)
-        {
-            bool isFiltered = false;
-            foreach (var filter in filters)
-            {
-                if (emp.FirstName.ToLower().StartsWith(filter.ToLower()) ||
-                    emp.Location.ToString().ToLower() == filter.ToLower() ||
-                    emp.Department.ToString().ToLower() == filter.ToLower() ||
-                    emp.EmpNo.ToString().ToLower() == filter.ToLower())
-                    {
-                        isFiltered = true;
-                        break;
-                    }
-            }
-            if (isFiltered)
-            {
-                filteredEmps.Add(emp);
-            }
-        }
-        return filteredEmps;
+        return _employeeDal.Filter(filters);
     }
 
     public List<Employee> GetAllEmployees()
     {
-        return _dal.Get();
+        return _employeeDal.GetAll();
     }
 }

@@ -2,18 +2,23 @@
 using CommandLine;
 using System.Collections.Generic;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace EmployeeManagement;
 
-class Program
+public static class Program
 {   
-    private readonly IBAL _bal;
-    private readonly ILogger _console;
-    private readonly string filePath = "";
-    public Program(IBAL bal, ILogger console)
+    private static readonly IEmployeeBAL _employeeBal;
+    private static IConfiguration _configuration;
+    private static readonly ILogger _logger;
+    private static readonly string _filePath;
+    
+    static Program()
     {
-        _bal = bal;
-        _console = console;
+        BuildConfiguration();
+        _logger = new ConsoleLogger();
+        _filePath = _configuration["EmployeeDataFilePath"];
+        _employeeBal = new EmployeeBAL(new EmployeeDAL(_logger, _filePath), _logger);
     }
     
     public static void Main(string[] args)
@@ -21,77 +26,95 @@ class Program
         Parser.Default.ParseArguments<Options>(args)
         .WithParsed(options =>
         {
-            ILogger console = new ConsoleLogger();
-            IBAL bal = new EmployeeBAL(new EmployeeDAL(console), console);
-            Program program = new Program(bal, console);
             if(options.Add)
             {
-                program._bal.Add(program.EmployeeDataInput());
+                if(_employeeBal.Add(GetEmployeeInputs()))
+                {
+                    _logger.LogSuccess("Succesfully Added ");
+                }
+                else
+                {
+                    _logger.LogError("Invalid");
+                }
             }
             else if(options.Filter)
             {
-                program.FilterAndDisplay();
+                FilterAndDisplay();
             }
             else if(options.Edit != 0)
             {
-                program._bal.Update(program.Update());
+                Update();
             }
             else if (options.Delete != null && options.Delete.Any())
             {
-                program._bal.Delete(options.Delete);
+                if(_employeeBal.Delete(options.Delete))
+                {
+                    _logger.LogSuccess("Deleted Successfully");
+                }
+                else
+                {
+                    _logger.LogSuccess("Cannot find Employee");
+                }
             }
             else if(options.Display)
             {
-                List<Employee> employees = program._bal.GetAllEmployees();
-                program.Display(employees);
+                List<Employee> employees = _employeeBal.GetAllEmployees();
+                DisplayEmployee(employees);
             }
             else
             {
-                program._console.LogError("Invalid Command");
+                _logger.LogError("Invalid Command");
             }
         });
     }
 
-    public Employee EmployeeDataInput()
+    public static void BuildConfiguration()
     {
-        _console.LogInfo("Employee Number: ");
+        _configuration = new ConfigurationBuilder()
+            .AddJsonFile("C:\\Users\\alekhya.n\\Desktop\\html\\Task5\\EmployeeManagementSystem\\appSettings.json", optional: true, reloadOnChange: true)
+            .Build();
+    }
+
+    public static Employee GetEmployeeInputs()
+    {
+        _logger.DisplayMsg("Employee Number: ");
         int empNo = int.Parse(Console.ReadLine()?? "0" );
 
-        _console.LogInfo("First Name: ");
+        _logger.DisplayMsg("First Name: ");
         string firstName = (Console.ReadLine()?? "");
 
-        _console.LogInfo("Last Name: ");
+        _logger.DisplayMsg("Last Name: ");
         string lastName = (Console.ReadLine()?? "");
 
-        _console.LogInfo("Date of Birth (MM-DD-YYYY): ");
+        _logger.DisplayMsg("Date of Birth (MM-DD-YYYY): ");
         DateTime dob = DateTime.Parse(Console.ReadLine() ?? "0000-00-00");
 
-        _console.LogInfo("Email: ");
+        _logger.DisplayMsg("Email: ");
         string mail = (Console.ReadLine()?? "");
 
-        _console.LogInfo("Mobile Number: ");
+        _logger.DisplayMsg("Mobile Number: ");
         string mobileNumber = (Console.ReadLine() ?? "0");
 
-        _console.LogInfo("Joining Date (MM-DD-YYYY): ");
+        _logger.DisplayMsg("Joining Date (MM-DD-YYYY): ");
         DateTime joiningDate = DateTime.Parse(Console.ReadLine() ?? "0000-00-00");
 
-        _console.LogInfo("Location: (Hyderabad, US, UK)");
+        _logger.DisplayMsg("Location: (Hyderabad, US, UK)");
         Location Location;
         Enum.TryParse(Console.ReadLine(), ignoreCase: true, out Location);
         
-        _console.LogInfo("Department: (PE, IT)");
+        _logger.DisplayMsg("Department: (PE, IT)");
         Department Department;
         Enum.TryParse(Console.ReadLine(), ignoreCase: true, out Department);
         
-        _console.LogInfo("Role: (Intern, Developer, Admin)");
+        _logger.DisplayMsg("Role: (Intern, Developer, Admin)");
         Role Role;
         Enum.TryParse(Console.ReadLine(), ignoreCase: true, out Role);
         
-        _console.LogInfo("Manager: (Hasnu, Sandeep, Bhagvan)");
+        _logger.DisplayMsg("Manager: (Hasnu, Sandeep, Bhagvan)");
         Manager Manager;
         Enum.TryParse(Console.ReadLine(), ignoreCase: true, out Manager);
         
-        _console.LogInfo("Project: (p1, p2)");
+        _logger.DisplayMsg("Project: (p1, p2)");
         Project Project;
         Enum.TryParse(Console.ReadLine(), ignoreCase: true, out Project);
         
@@ -113,87 +136,92 @@ class Program
         return employee;
     }
     
-    public void Display(List<Employee> employees)
+    public static void DisplayEmployee(List<Employee> employees)
     {
         if (employees.Count == 0)
         {
-            _console.LogError("No employees found");
+            _logger.LogError("No employees found");
             return;
         }
         foreach (var employee in employees)
         {
             Console.WriteLine(employee.ToString());
         }
+        _logger.LogInfo("");
     } 
 
-    public void FilterAndDisplay()
+    public static void FilterAndDisplay()
     {
-        _console.LogInfo("Enter Alphabet");
+        _logger.DisplayMsg("Enter Alphabet");
         string alphabetFilter = Console.ReadLine();
     
-        _console.LogInfo("Enter Location");
+        _logger.DisplayMsg("Enter Location");
         string locationFilter = Console.ReadLine();
     
-        _console.LogInfo("Enter Department");
+        _logger.DisplayMsg("Enter Department");
         string departmentFilter = Console.ReadLine();
     
-        _console.LogInfo("Enter EmpNo to search");
-        string empNoFilter = Console.ReadLine();
+        _logger.DisplayMsg("Enter EmpNo to search");
+        string empNoFilterString = Console.ReadLine(); 
+        int? empNoFilter = null;
+        if (!string.IsNullOrEmpty(empNoFilterString) && int.TryParse(empNoFilterString, out int empNo))
+        {
+            empNoFilter = empNo;
+        }
 
-        List<string> filters = new List<string>();
-        if (!string.IsNullOrEmpty(alphabetFilter))
-            filters.Add(alphabetFilter.ToLower()); 
-        if (!string.IsNullOrEmpty(locationFilter))
-            filters.Add(locationFilter.ToLower());
-        if (!string.IsNullOrEmpty(departmentFilter))
-            filters.Add(departmentFilter.ToLower());
-        if (!string.IsNullOrEmpty(empNoFilter))
-            filters.Add(empNoFilter.ToLower());
-
-        List<Employee> filteredEmployees = _bal.Filter(filters);
-        Display(filteredEmployees);
+        EmployeeFilter filters = new EmployeeFilter
+        {
+            FirstName = alphabetFilter,
+            Location = locationFilter,
+            Department = departmentFilter,
+            EmpNo = empNoFilter 
+        };
+        List<Employee> filteredEmployees = _employeeBal.Filter(filters);
+        _logger.LogInfo("Employees found : ");
+        DisplayEmployee(filteredEmployees);
+        _logger.LogSuccess("Filtered Successfully");
     }  
 
-    public Employee Update()
+    public static void Update()
     {
-        _console.LogInfo("Employee Number: ");
+        _logger.DisplayMsg("Employee Number: ");
         int empNo = int.Parse(Console.ReadLine()?? "0" );
 
-        _console.LogInfo("First Name: ");
+        _logger.DisplayMsg("First Name: ");
         string firstName = (Console.ReadLine()?? "");
 
-        _console.LogInfo("Last Name: ");
+        _logger.DisplayMsg("Last Name: ");
         string lastName = (Console.ReadLine()?? "");
 
-        _console.LogInfo("Date of Birth (MM-DD-YYYY): ");
+        _logger.DisplayMsg("Date of Birth (MM-DD-YYYY): ");
         DateTime dob = DateTime.Parse(Console.ReadLine() ?? "0000-00-00");
 
-        _console.LogInfo("Email: ");
+        _logger.DisplayMsg("Email: ");
         string mail = (Console.ReadLine()?? "");
 
-        _console.LogInfo("Mobile Number: ");
+        _logger.DisplayMsg("Mobile Number: ");
         string mobileNumber = (Console.ReadLine() ?? "0");
 
-        _console.LogInfo("Joining Date (MM-DD-YYYY): ");
+        _logger.DisplayMsg("Joining Date (MM-DD-YYYY): ");
         DateTime joiningDate = DateTime.Parse(Console.ReadLine() ?? "0000-00-00");
 
-        _console.LogInfo("Location: (Hyderabad, US, UK)");
+        _logger.DisplayMsg("Location: (Hyderabad, US, UK)");
         Location Location;
         Enum.TryParse(Console.ReadLine(), ignoreCase: true, out Location);
         
-        _console.LogInfo("Department: (PE, IT)");
+        _logger.DisplayMsg("Department: (PE, IT)");
         Department Department;
         Enum.TryParse(Console.ReadLine(), ignoreCase: true, out Department);
         
-        _console.LogInfo("Role: (Intern, Developer, Admin)");
+        _logger.DisplayMsg("Role: (Intern, Developer, Admin)");
         Role Role;
         Enum.TryParse(Console.ReadLine(), ignoreCase: true, out Role);
         
-        _console.LogInfo("Manager: (Hasnu, Sandeep, Bhagvan)");
+        _logger.DisplayMsg("Manager: (Hasnu, Sandeep, Bhagvan)");
         Manager Manager;
         Enum.TryParse(Console.ReadLine(), ignoreCase: true, out Manager);
         
-        _console.LogInfo("Project: (p1, p2)");
+        _logger.DisplayMsg("Project: (p1, p2)");
         Project Project;
         Enum.TryParse(Console.ReadLine(), ignoreCase: true, out Project);
         
@@ -212,7 +240,7 @@ class Program
             Manager = Manager,
             Project = Project
         };
-        return employee;
+        _employeeBal.Update(employee);
     }
 }
 
