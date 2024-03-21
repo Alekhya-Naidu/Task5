@@ -1,26 +1,33 @@
 using System;
+using System.Text;
 using System.Text.Json.Serialization;
 
-namespace EmployeeManagement;
-
-public class Employee
+namespace EmployeeManagement
 {
-    public int EmpNo { get; set;}
-    public string? FirstName { get; set; }
-    public string? LastName { get; set; }
-    public DateTime Dob { get; set; }
-    public string? Mail { get; set;}
-    public string MobileNumber { get; set;}
-    public DateTime JoiningDate { get; set;}
-    public Location Location { get; set; }
-    public Department Department { get; set; }
-    public Role? Role { get; set; }
-    public Manager? Manager { get; set; }
-    public Project? Project { get; set; }
-    
-    public override string ToString()
+    public class Employee
     {
-        return $"EmpNo: {EmpNo}\nName: {FirstName} {LastName}\nDob : {Dob}\nMail: {Mail}\nMobileNumber: {MobileNumber}\nJoining Date: {JoiningDate}\nLocation: {Location}\nDepartment: {Department}\nRole: {Role}\nManager: {Manager}\nProject: {Project}";
+        public int EmpNo { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public DateTime Dob { get; set; }
+        public string? Mail { get; set; }
+        public string MobileNumber { get; set; }
+        public DateTime JoiningDate { get; set; }
+        public int LocationId { get; set; }
+        public int DepartmentId { get; set; }
+        public int RoleId { get; set; }
+        public int ManagerId { get; set; }
+        public int ProjectId { get; set; }
+
+        [JsonIgnore]
+        public Location Location { get; set; }
+        [JsonIgnore]
+        public Department Department { get; set; }
+        [JsonIgnore]
+        public Role Role { get; set; }
+        [JsonIgnore]
+        public Manager Manager { get; set; }
+        [JsonIgnore]
+        public Project Project { get; set; }
     }
 }
-

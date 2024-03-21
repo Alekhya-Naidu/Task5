@@ -1,8 +1,9 @@
+using System.Collections.Generic;
+
 namespace EmployeeManagement;
 
-public enum Location
+public class Location : IEntity
 {
-    Hyderabad = 1,
-    US,
-    Uk
+    public int Id { get; set; }
+    public string Name { get; set; }
 }

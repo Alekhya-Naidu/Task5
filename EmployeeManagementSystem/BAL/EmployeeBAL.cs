@@ -1,24 +1,73 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
 
 namespace EmployeeManagement;
-
-public class EmployeeBAL : IEmployeeBAL
-{
-    public readonly IEmployeeDAL _employeeDal;
-    public readonly ILogger _logger;
-    
-    public EmployeeBAL(IEmployeeDAL employeeDAL, ILogger logger)
+    public class EmployeeBAL : IEmployeeBAL
     {
-        _employeeDal = employeeDAL;
-        _logger = logger;
+        private readonly IEmployeeDAL _employeeDal;
+        private readonly IRolesBAL _rolesBAL; // Corrected variable name
+        private readonly ILogger _logger;
+
+        public EmployeeBAL(IEmployeeDAL employeeDAL, IRolesBAL rolesBAL, ILogger logger)
+        {
+            _employeeDal = employeeDAL;
+            _rolesBAL = rolesBAL; // Corrected assignment
+            _logger = logger;
+        }
+
+    public Location GetLocationFromInput(string locationInput)
+    {
+        return _employeeDal.GetLocationFromInput(locationInput);
+    }
+
+    public Department GetDepartmentFromInput(string departmentName)
+    {
+        return _employeeDal.GetDepartmentFromInput(departmentName);
+    }
+
+    public Role GetRoleFromInput(string roleName)
+    {
+        return _employeeDal.GetRoleFromInput(roleName);
+    }
+
+    public Manager GetManagerFromInput(string managerName)
+    {
+        return _employeeDal.GetManagerFromInput(managerName);
+    }
+
+    public Project GetProjectFromInput(string projectName)
+    {
+        return _employeeDal.GetProjectFromInput(projectName);
+    }
+    
+    public Location GetLocationById(int locationId)
+    {
+        return _employeeDal.GetLocationById(locationId);
+    }
+
+    public Department GetDepartmentById(int departmentId)
+    {
+        return _employeeDal.GetDepartmentById(departmentId);
+    }
+
+    public Role GetRoleById(int roleId)
+    {
+        return _employeeDal.GetRoleById(roleId);
+    }
+
+    public Manager GetManagerById(int managerId)
+    {
+        return _employeeDal.GetManagerById(managerId);
+    }
+
+    public Project GetProjectById(int projectId)
+    {
+        return _employeeDal.GetProjectById(projectId);
     }
 
     public bool Add(Employee employee)
     {
-        if(!(ValidateEmployeeInputData(employee)))
+        if (!(ValidateEmployeeInputData(employee)))
         {
             return false;
         }
@@ -26,7 +75,7 @@ public class EmployeeBAL : IEmployeeBAL
         {
             return _employeeDal.Insert(employee);
         }
-        catch (Exception ex)
+        catch
         {
             return false;
         }
@@ -35,7 +84,7 @@ public class EmployeeBAL : IEmployeeBAL
     public bool Update(Employee updatedEmployee)
     {
         List<Employee> existingEmployees = _employeeDal.GetAll();
-        Employee existingEmployee = existingEmployees.FirstOrDefault(emp => emp.EmpNo == updatedEmployee.EmpNo);
+        Employee existingEmployee = existingEmployees.Find(emp => emp.EmpNo == updatedEmployee.EmpNo);
         if (!(ValidateEmployeeInputData(updatedEmployee)))
         {
             return false;
@@ -60,7 +109,7 @@ public class EmployeeBAL : IEmployeeBAL
             }
             return true;
         }
-        catch (Exception ex)
+        catch
         {
             return false;
         }
@@ -83,47 +132,44 @@ public class EmployeeBAL : IEmployeeBAL
         if(employee.MobileNumber.Length > 1)
         {
             if(employee.MobileNumber.Length != 10)
-                return false;
-        }
-        if(employee.Location != 0)
-        {
-            if(!Enum.IsDefined(typeof(Location), employee.Location))
             {
-                return false;
+               return false;
             }
-            return true;
         }
-        if(employee.Department != 0)
+        if(employee.LocationId != 0)
         {
-            if(!Enum.IsDefined(typeof(Department), employee.Department))
+            if (employee.LocationId < 1 || employee.LocationId > 3)
             {
                 return false;
             }
         }
-        if(employee.Role != 0)
+        if(_rolesBAL == null)
         {
-            if(!Enum.IsDefined(typeof(Role), employee.Role))
-            {
-                return false;
-            }
+            return false;
         }
-        if(employee.Manager != 0)
+        var departments = _rolesBAL.GetAllDepartments();
+        var department = departments.FirstOrDefault(d => d.Id == employee.DepartmentId);
+        if (department == null)
         {
-            if (!Enum.IsDefined(typeof(Manager), employee.Manager))
-            {
-                return false;
-            }
+            return false; 
         }
-        if(employee.Project != 0)
+        var roles = _rolesBAL.GetAllRoles().Where(r => r.DepartmentId == employee.DepartmentId);
+        if (!roles.Any())
         {
-            if (!Enum.IsDefined(typeof(Project), employee.Project))
+            return false; 
+        }
+
+        if(employee.ProjectId != 0)
+        {
+            if(employee.ProjectId != 1 && employee.ProjectId != 2)
             {
                 return false;
             }
         }
         return true;
     }
-
+    
+    
     public List<Employee> Filter(EmployeeFilter filters)
     {
         return _employeeDal.Filter(filters);

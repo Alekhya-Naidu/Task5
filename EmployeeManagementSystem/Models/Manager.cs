@@ -1,8 +1,9 @@
+using System.Collections.Generic;
+
 namespace EmployeeManagement;
 
-public enum Manager
+public class Manager : IEntity
 {
-    Hasnu = 1,
-    Sandeep,
-    Bhagvan
+    public int Id { get; set; }
+    public string Name { get; set; }
 }

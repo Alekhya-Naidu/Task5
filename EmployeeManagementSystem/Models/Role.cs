@@ -1,8 +1,10 @@
+using System.Collections.Generic;
+
 namespace EmployeeManagement;
 
-public enum Role
+public class Role : IEntity
 {
-    Intern = 1,
-    Developer,
-    Admin
+    public int Id { get; set; }
+    public int DepartmentId { get; set; }
+    public string Name { get; set; }
 }

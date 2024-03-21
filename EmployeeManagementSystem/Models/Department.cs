@@ -1,7 +1,9 @@
+using System.Collections.Generic;
+
 namespace EmployeeManagement;
 
-public enum Department
+public class Department : IEntity
 {
-    PE = 1,
-    IT
+    public int Id { get; set; }
+    public string Name { get; set; }
 }
