@@ -2,8 +2,11 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
+using EMS.DAL.DBO;
+using EMS.DAL.Interfaces;  
+using EMS.Common.Helpers;
 
-namespace EmployeeManagement;
+namespace EMS.DAL.DAL;
 
 public class RolesDAL : IRolesDAL
 {
@@ -16,20 +19,22 @@ public class RolesDAL : IRolesDAL
         _jsonHelper = jsonHelper;
     }
 
-    public List<Role> GetAllRoles()
+    public List<Role> GetAllRoles<Role>(string rolefilePath)
     {
-        List<Role> existingRoles = new List<Role>();
-        if (File.Exists(Path.Combine(_configuration?["BaseFilePath"],_configuration?["RoleDataFilePath"])))
+        try
         {
-            string json = _jsonHelper.ReadFromFile(Path.Combine(_configuration?["BaseFilePath"],_configuration?["RoleDataFilePath"]));
-            existingRoles = _jsonHelper.Deserialize<List<Role>>(json);
+            string json = _jsonHelper.ReadFromFile(rolefilePath);
+            return _jsonHelper.Deserialize<List<Role>>(json);
         }
-        return existingRoles;
+        catch
+        {
+            return new List<Role>();
+        }
     }
 
     public Role GetRoleFromName(string roleInput)
     {
-        List<Role> roles = GetAllRoles();
+        List<Role> roles = GetAllRoles<Role>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["RoleDataFilePath"]));
         foreach (var role in roles)
         {
             if (string.Equals(role.Name.ToLower(), roleInput, StringComparison.OrdinalIgnoreCase))
@@ -42,30 +47,13 @@ public class RolesDAL : IRolesDAL
     
     public Role GetRoleById(int roleId)
     {
-        List<Role> roles = GetAllRoles();
+        List<Role> roles = GetAllRoles<Role>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["RoleDataFilePath"]));
         return roles.FirstOrDefault(role => role.Id == roleId);
-    }
-
-    public int GetRoleId(Role role)
-    {
-        if(role != null)
-        {
-            if(role.Id != 0)
-            {
-                return role.Id;
-            }
-            else if(!string.IsNullOrEmpty(role.Name))
-            {
-                Role existingRole =  GetRoleFromName(role.Name);
-                return existingRole?.Id ?? 0;
-            }
-        }
-        return 0;
     }
     
     public bool AddRole(int departmentId, int roleId, string roleName)
     {
-        var roles = GetAllRoles();
+        var roles = GetAllRoles<Role>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["RoleDataFilePath"]));
         if (roles.Any(r => r.DepartmentId == departmentId && r.Id == roleId))
         {
             return false;
@@ -92,17 +80,5 @@ public class RolesDAL : IRolesDAL
         {
             return false;
         }
-    }
-
-    public List<Department> GetAllDepartments()
-    {
-        List<Department> existingDepartments = new List<Department>();
-        if (File.Exists(Path.Combine(_configuration?["BaseFilePath"], _configuration?["DepartmentDataFilePath"])))
-        {
-
-            string json = File.ReadAllText(Path.Combine(_configuration?["BaseFilePath"], _configuration?["DepartmentDataFilePath"]));
-            existingDepartments = JsonSerializer.Deserialize<List<Department>>(json) ?? new List<Department>();
-        }
-        return existingDepartments;
     }
 }

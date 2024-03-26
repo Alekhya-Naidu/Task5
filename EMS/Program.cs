@@ -4,6 +4,12 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
+using EMS.BAL.BAL;
+using EMS.DAL.DAL;
+using EMS.DAL.DBO;
+using EMS.BAL.Interfaces;
+using EMS.Common.Helpers;
+using EMS.Common.Logging;
 
 namespace EmployeeManagement;
 
@@ -11,10 +17,10 @@ public static class Program
 {   
     private static readonly IEmployeeBAL _employeeBal;
     private static readonly IMasterDataBal _masterDataBAL;
-    private static readonly RolesBAL _rolesBAL;
+    private static readonly IRolesBAL _rolesBAL;
     private static IConfiguration _configuration;
     private static readonly ILogger _logger;
-    private static readonly IConsole _console;
+    private static readonly IWriter _console;
     private static readonly IJsonHelper _jsonHelper;
     
     static Program()
@@ -24,7 +30,7 @@ public static class Program
         _jsonHelper = new JsonHelper();
         _masterDataBAL = new MasterDataBAL(new MasterDataDAl(_configuration, _jsonHelper));
         _rolesBAL = new RolesBAL(new RolesDAL(_configuration, _jsonHelper));    
-        _employeeBal = new EmployeeBAL(new EmployeeDAL(_jsonHelper, new MasterDataDAl(_configuration, _jsonHelper), new RolesDAL(_configuration, _jsonHelper), _configuration),_rolesBAL);
+        _employeeBal = new EmployeeBAL(_configuration, new EmployeeDAL(_configuration,_jsonHelper, new MasterDataDAl(_configuration, _jsonHelper), new RolesDAL(_configuration, _jsonHelper)), _masterDataBAL, _rolesBAL);
     }
     
     public static void Main(string[] args)
@@ -71,7 +77,7 @@ public static class Program
     public static void BuildConfiguration()
     {
         _configuration = new ConfigurationBuilder()
-            .AddJsonFile("C:\\Tasks\\Task5\\EmployeeManagementSystem\\appSettings.json", optional: true, reloadOnChange: true)
+            .AddJsonFile("C:\\Tasks\\Task5\\EMS\\appSettings.json", optional: true, reloadOnChange: true)
             .Build();
     } 
     
@@ -170,7 +176,7 @@ public static class Program
         // }
 
         _console.PrintMsg("Select Role: ");
-        List<Role> roles = _rolesBAL.GetAllRoles();
+        List<Role> roles = _rolesBAL.GetAllRoles<Role>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["RoleDataFilePath"]));
         foreach (var r in roles)
         {
             if (r.DepartmentId == department.Id)
@@ -230,7 +236,6 @@ public static class Program
             stringBuilder.AppendLine("JoiningDate : " + employee.JoiningDate);
 
             var location = _masterDataBAL.GetLocationById(employee.LocationId); 
-
             if (location != null)
             {
                 stringBuilder.AppendLine("Location: " + location.Name);
@@ -366,25 +371,26 @@ public static class Program
 
     private static void DisplayAllRoles()
     {
-        List<Role> roles = _rolesBAL.GetAllRoles();
+        StringBuilder roleString = new StringBuilder();
+        List<Role> roles = _rolesBAL.GetAllRoles<Role>(Path.Combine(_configuration?["BaseFilePath"], _configuration?["RoleDataFilePath"]));
+        
         foreach (var role in roles)
         {
-            Console.WriteLine("Dept ID : "+role.DepartmentId+"\t Role ID: "+role.Id+ "\tName: "+role.Name);
+            roleString.AppendLine($"Dept ID: {role.DepartmentId}\tRole ID: {role.Id}\tName: {role.Name}");
         }
+        _console.PrintMsg(roleString.ToString());
     }
 
     public static bool AddOrUpdateRole(int departmentId, string roleName)
     {
         try
         {
-            List<Department> departments = _rolesBAL.GetAllDepartments(); 
-            Department department = departments.Find(d => d.Id == departmentId);
+            var department = _masterDataBAL.GetDepartmentById(departmentId); 
             if (department == null)
             {
                 return false;
-
             }
-            List<Role> roles = _rolesBAL.GetAllRoles();
+            List<Role> roles = _rolesBAL.GetAllRoles<Role>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["RoleDataFilePath"]));
             int roleId = roles.Count + 1; 
             Role role = new Role
             {

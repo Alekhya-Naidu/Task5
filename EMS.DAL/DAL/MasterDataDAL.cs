@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
-
 using System.Text.Json;
+using EMS.DAL.DBO;
+using EMS.DAL.Interfaces;  
+using EMS.Common.Helpers;
 
-namespace EmployeeManagement;
+namespace EMS.DAL.DAL;
 
 public class MasterDataDAl : IMasterDataDal
 {
@@ -17,22 +19,65 @@ public class MasterDataDAl : IMasterDataDal
         _jsonHelper = jsonHelper;
     }
 
-    public List<T> LoadData<T>(string filePath)
+    public List<Location> GetAllLocations<Location>(string locationfilePath)
     {
         try
         {
-            string json = _jsonHelper.ReadFromFile(filePath);
-            return _jsonHelper.Deserialize<List<T>>(json);
+            string json = _jsonHelper.ReadFromFile(locationfilePath);
+            return _jsonHelper.Deserialize<List<Location>>(json);
         }
         catch
         {
-            return new List<T>();
+            return new List<Location>();
         }
     }
     
+
+    public List<Department> GetAllDepartments<Department>(string departmentfilePath)
+    {
+        try
+        {
+            string json = _jsonHelper.ReadFromFile(departmentfilePath);
+            return _jsonHelper.Deserialize<List<Department>>(json);
+        }
+        catch
+        {
+            return new List<Department>();
+        }
+    }
+    
+
+    public List<Manager> GetAllManagers<Manager>(string managerfilePath)
+    {
+        try
+        {
+            string json = _jsonHelper.ReadFromFile(managerfilePath);
+            return _jsonHelper.Deserialize<List<Manager>>(json);
+        }
+        catch
+        {
+            return new List<Manager>();
+        }
+    }
+    
+
+    public List<Project> GetAllProjects<Project>(string projectfilePath)
+    {
+        try
+        {
+            string json = _jsonHelper.ReadFromFile(projectfilePath);
+            return _jsonHelper.Deserialize<List<Project>>(json);
+        }
+        catch
+        {
+            return new List<Project>();
+        }
+    }
+    
+
     public Location GetLocationFromName(string locationInput)
     {
-        List<Location> locations = LoadData<Location>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["LocationDataFilePath"]));
+        List<Location> locations = GetAllLocations<Location>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["LocationDataFilePath"]));
         foreach (var location in locations)
         {
             if (string.Equals(location.Name.ToLower(), locationInput, StringComparison.OrdinalIgnoreCase))
@@ -45,7 +90,7 @@ public class MasterDataDAl : IMasterDataDal
     
     public Department GetDepartmentFromName(string departmentInput)
     {
-        List<Department> departments = LoadData<Department>(Path.Combine(_configuration?["BaseFilePath"], _configuration?["DepartmentDataFilePath"]));
+        List<Department> departments = GetAllDepartments<Department>(Path.Combine(_configuration?["BaseFilePath"], _configuration?["DepartmentDataFilePath"]));
         foreach (var department in departments)
         {
             if (string.Equals(department.Name.ToLower(), departmentInput, StringComparison.OrdinalIgnoreCase))
@@ -58,7 +103,7 @@ public class MasterDataDAl : IMasterDataDal
     
     public Manager GetManagerFromName(string managerInput)
     {
-        List<Manager> managers = LoadData<Manager>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["ManagerDataFilePath"]));
+        List<Manager> managers = GetAllManagers<Manager>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["ManagerDataFilePath"]));
         foreach (var manager in managers)
         {
             if (string.Equals(manager.Name.ToLower(), managerInput, StringComparison.OrdinalIgnoreCase))
@@ -71,7 +116,7 @@ public class MasterDataDAl : IMasterDataDal
     
     public Project GetProjectFromName(string projectInput)
     {
-        List<Project> projects = LoadData<Project>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["ProjectDataFilePath"]));
+        List<Project> projects = GetAllProjects<Project>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["ProjectDataFilePath"]));
         foreach (var project in projects)
         {
             if (string.Equals(project.Name.ToLower(), projectInput, StringComparison.OrdinalIgnoreCase))
@@ -84,93 +129,25 @@ public class MasterDataDAl : IMasterDataDal
     
     public Location GetLocationById(int locationId)
     {
-        List<Location> locations = LoadData<Location>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["LocationDataFilePath"]));
+        List<Location> locations = GetAllLocations<Location>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["LocationDataFilePath"]));
         return locations.FirstOrDefault(location => location.Id == locationId);
     }
 
     public Department GetDepartmentById(int departmentId)
     {
-        List<Department> departments = LoadData<Department>(Path.Combine(_configuration?["BaseFilePath"], _configuration?["DepartmentDataFilePath"]));
+        List<Department> departments = GetAllDepartments<Department>(Path.Combine(_configuration?["BaseFilePath"], _configuration?["DepartmentDataFilePath"]));
         return departments.FirstOrDefault(department => department.Id == departmentId);
     }
 
     public Manager GetManagerById(int managerId)
     {
-        List<Manager> managers = LoadData<Manager>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["ManagerDataFilePath"]));
+        List<Manager> managers = GetAllManagers<Manager>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["ManagerDataFilePath"]));
         return managers.FirstOrDefault(manager => manager.Id == managerId);
     }
 
     public Project GetProjectById(int projectId)
     {
-        List<Project> projects = LoadData<Project>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["ProjectDataFilePath"]));
+        List<Project> projects = GetAllProjects<Project>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["ProjectDataFilePath"]));
         return projects.FirstOrDefault(project => project.Id == projectId);
-    }
-    
-    public int GetLocationId(Location location)
-    {
-        if (location != null)
-        {
-            if (location.Id != 0)
-            {
-                return location.Id;
-            }
-            else if (!string.IsNullOrEmpty(location.Name))
-            {
-                Location existingLocation = GetLocationFromName(location.Name);
-                return existingLocation?.Id ?? 0;
-            }
-        }
-        return 0;
-    }
-
-    public int GetDepartmentId(Department department)
-    {
-        if(department != null)
-        {
-            if(department.Id != 0)
-            {
-                return department.Id;
-            }
-            else if(!string.IsNullOrEmpty(department.Name))
-            {
-                Department existingDepartment =  GetDepartmentFromName(department.Name);
-                return existingDepartment?.Id ?? 0;
-            }
-        }
-        return 0;
-    }
-
-    public int GetManagerId(Manager manager)
-    {
-        if(manager != null)
-        {
-            if(manager.Id != 0)
-            {
-                return manager.Id;
-            }
-            else if(!string.IsNullOrEmpty(manager.Name))
-            {
-                Manager existingManager =  GetManagerFromName(manager.Name);
-                return existingManager?.Id ?? 0;
-            }
-        }
-        return 0;
-    }
-
-    public int GetProjectId(Project project)
-    {
-        if(project != null)
-        {
-            if(project.Id != 0)
-            {
-                return project.Id;
-            }
-            else if(!string.IsNullOrEmpty(project.Name))
-            {
-                Project existingProject =  GetProjectFromName(project.Name);
-                return existingProject?.Id ?? 0;
-            }
-        }
-        return 0;
     }
 }

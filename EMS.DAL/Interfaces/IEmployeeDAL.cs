@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using EMS.DAL.DBO;
 
-namespace EmployeeManagement;
+namespace EMS.DAL.Interfaces;
 
 public interface IEmployeeDAL
 {

@@ -3,22 +3,25 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
+using EMS.DAL.DBO;
+using EMS.DAL.Interfaces;  
+using EMS.Common.Helpers;
 
-namespace EmployeeManagement;
+namespace EMS.DAL.DAL;
 
 public class EmployeeDAL : IEmployeeDAL
 {
+    private readonly IConfiguration _configuration;
     private readonly IJsonHelper _jsonHelper;
     private readonly IMasterDataDal _masterDataDAL;
-    private readonly RolesDAL _rolesDAL;
-    private readonly IConfiguration _configuration;
+    private readonly IRolesDAL _rolesDal;
     
-    public EmployeeDAL(IJsonHelper jsonHelper, IMasterDataDal masterDataDal, RolesDAL rolesDAL, IConfiguration configuration)
+    public EmployeeDAL(IConfiguration configuration, IJsonHelper jsonHelper, IMasterDataDal masterDataDal, IRolesDAL rolesDal)
     {
+        _configuration = configuration;
         _jsonHelper = jsonHelper;
         _masterDataDAL = masterDataDal;
-        _rolesDAL = rolesDAL;
-        _configuration = configuration;
+        _rolesDal = rolesDal;
     }
     
     public bool Insert(Employee employee)
@@ -41,11 +44,11 @@ public class EmployeeDAL : IEmployeeDAL
     {
         try
         {
-            List<Location> locations = _masterDataDAL.LoadData<Location>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["LocationDataFilePath"]));
-            List<Department> departments = _masterDataDAL.LoadData<Department>(Path.Combine(_configuration?["BaseFilePath"], _configuration?["DepartmentDataFilePath"]));
-            List<Role> roles = _masterDataDAL.LoadData<Role>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["RoleDataFilePath"]));
-            List<Manager> managers = _masterDataDAL.LoadData<Manager>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["ManagerDataFilePath"]));
-            List<Project> projects = _masterDataDAL.LoadData<Project>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["ProjectDataFilePath"]));
+            List<Location> locations = _masterDataDAL.GetAllLocations<Location>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["LocationDataFilePath"]));
+            List<Department> departments = _masterDataDAL.GetAllDepartments<Department>(Path.Combine(_configuration?["BaseFilePath"], _configuration?["DepartmentDataFilePath"]));
+            List<Role> roles = _rolesDal.GetAllRoles<Role>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["RoleDataFilePath"]));
+            List<Manager> managers = _masterDataDAL.GetAllManagers<Manager>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["ManagerDataFilePath"]));
+            List<Project> projects = _masterDataDAL.GetAllProjects<Project>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["ProjectDataFilePath"]));
 
             Location location = locations.FirstOrDefault(l => l.Name.Equals(employee.Location.Name, StringComparison.OrdinalIgnoreCase));
             Department department = departments.FirstOrDefault(d => d.Name.Equals(employee.Department.Name, StringComparison.OrdinalIgnoreCase));

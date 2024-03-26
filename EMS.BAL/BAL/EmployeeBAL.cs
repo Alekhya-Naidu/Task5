@@ -1,15 +1,23 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
+using EMS.BAL.Interfaces;
+using EMS.DAL.Interfaces;
+using EMS.DAL.DBO;
 
-namespace EmployeeManagement;
+namespace EMS.BAL.BAL;
 public class EmployeeBAL : IEmployeeBAL
 {
+    private readonly IConfiguration _configuration;
     private readonly IEmployeeDAL _employeeDal;
+     private readonly IMasterDataBal _masterDataBAL;
     private readonly IRolesBAL _rolesBAL;
 
-    public EmployeeBAL(IEmployeeDAL employeeDAL, IRolesBAL rolesBAL)
+    public EmployeeBAL(IConfiguration configuration, IEmployeeDAL employeeDAL,IMasterDataBal masterDataBal, IRolesBAL rolesBAL)
     {
+        _configuration = configuration;
         _employeeDal = employeeDAL;
+        _masterDataBAL = masterDataBal;
         _rolesBAL = rolesBAL;
     }
 
@@ -95,13 +103,13 @@ public class EmployeeBAL : IEmployeeBAL
         {
             return false;
         }
-        var departments = _rolesBAL.GetAllDepartments();
+        var departments = _masterDataBAL.GetAllDepartments<Department>(Path.Combine(_configuration?["BaseFilePath"], _configuration?["DepartmentDataFilePath"]));
         var department = departments.FirstOrDefault(d => d.Id == employee.DepartmentId);
         if (department == null)
         {
             return false; 
         }
-        var roles = _rolesBAL.GetAllRoles().Where(r => r.DepartmentId == employee.DepartmentId);
+        var roles = _rolesBAL.GetAllRoles<Role>(Path.Combine(_configuration?["BaseFilePath"],_configuration?["RoleDataFilePath"])).Where(r => r.DepartmentId == employee.DepartmentId);
         if (!roles.Any())
         {
             return false; 

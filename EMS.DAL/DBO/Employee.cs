@@ -2,7 +2,7 @@ using System;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace EmployeeManagement
+namespace EMS.DAL.DBO
 {
     public class Employee
     {

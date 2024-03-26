@@ -1,4 +1,4 @@
-namespace EmployeeManagement;
+namespace EMS.DAL.Interfaces;
 
 public interface IMasterData
 {

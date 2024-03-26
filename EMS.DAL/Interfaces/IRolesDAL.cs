@@ -1,14 +1,13 @@
 using System.Collections.Generic;
+using EMS.DAL.DBO;
 
-namespace EmployeeManagement;
+namespace EMS.DAL.Interfaces;
 
 public interface IRolesDAL
 {
-    List<Role> GetAllRoles();
+    List<Role> GetAllRoles<Role>(string rolefilePath);
     Role GetRoleFromName(string roleInput);
     Role GetRoleById(int roleId);
-    int GetRoleId(Role role);
     bool AddRole(int departmentId, int roleId, string roleName);
     bool UpdateRoles(List<Role> roles);
-    List<Department> GetAllDepartments();
 }

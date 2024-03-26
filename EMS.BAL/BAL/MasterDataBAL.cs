@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using EMS.BAL.Interfaces;
+using EMS.DAL.Interfaces;
+using EMS.DAL.DBO;
 
-namespace EmployeeManagement;
+namespace EMS.BAL.BAL;
 
 public class MasterDataBAL : IMasterDataBal
 {
@@ -10,6 +13,29 @@ public class MasterDataBAL : IMasterDataBal
     public MasterDataBAL(IMasterDataDal masterDataDal)
     {
         _masterDataDAL = masterDataDal;
+    }
+    
+    public List<Location> GetAllLocations<Location>(string locationfilePath)
+    {
+        return _masterDataDAL.GetAllLocations<Location>(locationfilePath);
+    }
+    
+
+    public List<Department> GetAllDepartments<Department>(string departmentfilePath)
+    {
+        return _masterDataDAL.GetAllDepartments<Department>(departmentfilePath);
+    }
+    
+
+    public List<Manager> GetAllManagers<Manager>(string managerfilePath)
+    {
+        return _masterDataDAL.GetAllManagers<Manager>(managerfilePath);
+    }
+    
+
+    public List<Project> GetAllProjects<Project>(string projectfilePath)
+    {
+        return _masterDataDAL.GetAllProjects<Project>(projectfilePath);
     }
     
     public Location GetLocationFromName(string locationInput)

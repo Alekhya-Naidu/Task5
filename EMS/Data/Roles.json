@@ -18,5 +18,10 @@
     "Id": 4,
     "DepartmentId": 1,
     "Name": "Developer"
+  },
+  {
+    "Id": 5,
+    "DepartmentId": 1,
+    "Name": "Manager"
   }
 ]

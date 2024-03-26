@@ -1,8 +1,8 @@
 using System;
 
-namespace EmployeeManagement;
+namespace EMS.Common.Helpers;
 
-public class ConsoleWriter : IConsole
+public class ConsoleWriter : IWriter
 {
     public void PrintMsg(string msg)
     {

@@ -42,20 +42,6 @@
     "ProjectId": 2
   },
   {
-    "EmpNo": 77,
-    "FirstName": "w",
-    "LastName": "f",
-    "Dob": "2003-02-03T00:00:00",
-    "Mail": "@.",
-    "MobileNumber": "",
-    "JoiningDate": "2012-12-12T00:00:00",
-    "LocationId": 3,
-    "DepartmentId": 2,
-    "RoleId": 6,
-    "ManagerId": 3,
-    "ProjectId": 1
-  },
-  {
     "EmpNo": 234,
     "FirstName": "wf",
     "LastName": "wfe",
@@ -68,5 +54,19 @@
     "RoleId": 2,
     "ManagerId": 2,
     "ProjectId": 2
+  },
+  {
+    "EmpNo": 865,
+    "FirstName": "Hermoine",
+    "LastName": "Granger",
+    "Dob": "2006-01-03T00:00:00",
+    "Mail": "hermoine@gmail.com",
+    "MobileNumber": "9876543211",
+    "JoiningDate": "2012-04-05T00:00:00",
+    "LocationId": 1,
+    "DepartmentId": 1,
+    "RoleId": 2,
+    "ManagerId": 2,
+    "ProjectId": 1
   }
 ]

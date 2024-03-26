@@ -1,6 +1,7 @@
 using System;
+using EMS.DAL.Interfaces; 
 
-namespace EmployeeManagement;
+namespace EMS.DAL.DBO;
 
 public class EmployeeFilter
 {

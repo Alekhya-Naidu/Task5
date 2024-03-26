@@ -1,8 +1,8 @@
 using System;
 
-namespace EmployeeManagement;
+namespace EMS.Common.Helpers;
 
-public interface IConsole
+public interface IWriter
 {
     void PrintMsg(string msg);
     void PrintError(string message);

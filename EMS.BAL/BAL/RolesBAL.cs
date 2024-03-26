@@ -1,19 +1,22 @@
 using System.Collections.Generic;
+using EMS.BAL.Interfaces;
+using EMS.DAL.Interfaces;
+using EMS.DAL.DBO;
 
-namespace EmployeeManagement;
+namespace EMS.BAL.BAL;
 
 public class RolesBAL : IRolesBAL
 {
-    private readonly RolesDAL _rolesDAL;
+    private readonly IRolesDAL _rolesDAL;
 
-    public RolesBAL(RolesDAL rolesDAL)
+    public RolesBAL(IRolesDAL rolesDAL)
     {
         _rolesDAL = rolesDAL;
     }
 
-    public List<Role> GetAllRoles()
+    public List<Role> GetAllRoles<Role>(string rolefilePath)
     {
-        return _rolesDAL.GetAllRoles();
+        return _rolesDAL.GetAllRoles<Role>(rolefilePath);
     }
 
     public Role GetRoleFromName(string roleInput)
@@ -33,10 +36,5 @@ public class RolesBAL : IRolesBAL
     public bool UpdateRoles(List<Role> roles)
     {
         return _rolesDAL.UpdateRoles(roles);
-    }
-    
-    public List<Department> GetAllDepartments()
-    {
-        return _rolesDAL.GetAllDepartments();
     }
 }

@@ -1,30 +1,25 @@
 using System;
 
-namespace EmployeeManagement;
+namespace EMS.Common.Logging;
 
 public class ConsoleLogger : ILogger
 {
     public void LogInfo(string message)
     {
-        Console.WriteLine(message);
-    }
-
-    public void DisplayMsg(string message)
-    {
-        Console.WriteLine(message);
+        LogMessage(message, ConsoleColor.White);
     }
 
     public void LogError(string message)
     {
-        LogMsg(message, ConsoleColor.Red);
+        LogMessage(message, ConsoleColor.Red);
     }
 
     public void LogSuccess(string message)
     {
-        LogMsg(message, ConsoleColor.Green);
+        LogMessage(message, ConsoleColor.Green);
     }
 
-    private void LogMsg(string message, ConsoleColor color)
+    private void LogMessage(string message, ConsoleColor color)
     {
         Console.ForegroundColor = color;
         Console.WriteLine(message);

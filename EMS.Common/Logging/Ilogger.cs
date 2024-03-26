@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 
-namespace EmployeeManagement;
+namespace EMS.Common.Logging;
 
 public interface ILogger
 {
-    void DisplayMsg(string message);
     void LogInfo(string message);
     void LogError(string message);
     void LogSuccess(string message);

@@ -1,10 +1,14 @@
 using System.Collections.Generic;
+using EMS.DAL.DBO;
 
-namespace EmployeeManagement;
+namespace EMS.DAL.Interfaces;
 
 public interface IMasterDataDal
 {
-    List<T> LoadData<T>(string filePath);
+    List<Location> GetAllLocations<Location>(string locationfilePath);
+    List<Department> GetAllDepartments<Department>(string departmentfilePath);
+    List<Manager> GetAllManagers<Manager>(string managerfilePath);
+    List<Project> GetAllProjects<Project>(string projectfilePath);
     Location GetLocationFromName(string locationInput);
     Department GetDepartmentFromName(string departmentInput);
     Manager GetManagerFromName(string managerInput);
@@ -13,8 +17,4 @@ public interface IMasterDataDal
     Department GetDepartmentById(int departmentId);
     Manager GetManagerById(int managerId);
     Project GetProjectById(int projectId);
-    int GetLocationId(Location location);
-    int GetDepartmentId(Department department);
-    int GetManagerId(Manager manager);
-    int GetProjectId(Project project);
 }
