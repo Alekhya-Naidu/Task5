@@ -1,0 +1,72 @@
+[
+  {
+    "EmpNo": 123,
+    "FirstName": "Alekhya",
+    "LastName": "Naidu",
+    "Dob": "2002-11-08T00:00:00",
+    "Mail": "alekhya.n@tezo.com",
+    "MobileNumber": "9876543210",
+    "JoiningDate": "2024-01-17T00:00:00",
+    "LocationId": 1,
+    "DepartmentId": 1,
+    "RoleId": 2,
+    "ManagerId": 1,
+    "ProjectId": 2
+  },
+  {
+    "EmpNo": 934,
+    "FirstName": "Harry",
+    "LastName": "Potter",
+    "Dob": "2002-12-14T00:00:00",
+    "Mail": "harry.p@gmail.com",
+    "MobileNumber": "9977553344",
+    "JoiningDate": "2021-12-13T00:00:00",
+    "LocationId": 3,
+    "DepartmentId": 2,
+    "RoleId": 3,
+    "ManagerId": 2,
+    "ProjectId": 1
+  },
+  {
+    "EmpNo": 233,
+    "FirstName": "Ron",
+    "LastName": "Weasley",
+    "Dob": "2001-03-04T00:00:00",
+    "Mail": "ron.w@tezo.com",
+    "MobileNumber": "9876543210",
+    "JoiningDate": "2022-12-15T00:00:00",
+    "LocationId": 2,
+    "DepartmentId": 1,
+    "RoleId": 5,
+    "ManagerId": 3,
+    "ProjectId": 2
+  },
+  {
+    "EmpNo": 77,
+    "FirstName": "w",
+    "LastName": "f",
+    "Dob": "2003-02-03T00:00:00",
+    "Mail": "@.",
+    "MobileNumber": "",
+    "JoiningDate": "2012-12-12T00:00:00",
+    "LocationId": 3,
+    "DepartmentId": 2,
+    "RoleId": 6,
+    "ManagerId": 3,
+    "ProjectId": 1
+  },
+  {
+    "EmpNo": 234,
+    "FirstName": "wf",
+    "LastName": "wfe",
+    "Dob": "2002-12-02T00:00:00",
+    "Mail": "2@iewn.com",
+    "MobileNumber": "9876543211",
+    "JoiningDate": "2007-07-06T00:00:00",
+    "LocationId": 3,
+    "DepartmentId": 2,
+    "RoleId": 2,
+    "ManagerId": 2,
+    "ProjectId": 2
+  }
+]

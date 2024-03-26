@@ -2,67 +2,15 @@ using System;
 using System.Collections.Generic;
 
 namespace EmployeeManagement;
-    public class EmployeeBAL : IEmployeeBAL
-    {
-        private readonly IEmployeeDAL _employeeDal;
-        private readonly IRolesBAL _rolesBAL; // Corrected variable name
-        private readonly ILogger _logger;
+public class EmployeeBAL : IEmployeeBAL
+{
+    private readonly IEmployeeDAL _employeeDal;
+    private readonly IRolesBAL _rolesBAL;
 
-        public EmployeeBAL(IEmployeeDAL employeeDAL, IRolesBAL rolesBAL, ILogger logger)
-        {
-            _employeeDal = employeeDAL;
-            _rolesBAL = rolesBAL; // Corrected assignment
-            _logger = logger;
-        }
-
-    public Location GetLocationFromInput(string locationInput)
+    public EmployeeBAL(IEmployeeDAL employeeDAL, IRolesBAL rolesBAL)
     {
-        return _employeeDal.GetLocationFromInput(locationInput);
-    }
-
-    public Department GetDepartmentFromInput(string departmentName)
-    {
-        return _employeeDal.GetDepartmentFromInput(departmentName);
-    }
-
-    public Role GetRoleFromInput(string roleName)
-    {
-        return _employeeDal.GetRoleFromInput(roleName);
-    }
-
-    public Manager GetManagerFromInput(string managerName)
-    {
-        return _employeeDal.GetManagerFromInput(managerName);
-    }
-
-    public Project GetProjectFromInput(string projectName)
-    {
-        return _employeeDal.GetProjectFromInput(projectName);
-    }
-    
-    public Location GetLocationById(int locationId)
-    {
-        return _employeeDal.GetLocationById(locationId);
-    }
-
-    public Department GetDepartmentById(int departmentId)
-    {
-        return _employeeDal.GetDepartmentById(departmentId);
-    }
-
-    public Role GetRoleById(int roleId)
-    {
-        return _employeeDal.GetRoleById(roleId);
-    }
-
-    public Manager GetManagerById(int managerId)
-    {
-        return _employeeDal.GetManagerById(managerId);
-    }
-
-    public Project GetProjectById(int projectId)
-    {
-        return _employeeDal.GetProjectById(projectId);
+        _employeeDal = employeeDAL;
+        _rolesBAL = rolesBAL;
     }
 
     public bool Add(Employee employee)
@@ -168,7 +116,6 @@ namespace EmployeeManagement;
         }
         return true;
     }
-    
     
     public List<Employee> Filter(EmployeeFilter filters)
     {

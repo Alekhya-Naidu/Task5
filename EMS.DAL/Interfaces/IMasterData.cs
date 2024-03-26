@@ -1,6 +1,6 @@
 namespace EmployeeManagement;
 
-public interface IEntity
+public interface IMasterData
 {
     string Name { get; set; }
     int Id { get; set; }

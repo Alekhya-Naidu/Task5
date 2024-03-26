@@ -10,89 +10,60 @@ namespace EmployeeManagement;
 public static class Program
 {   
     private static readonly IEmployeeBAL _employeeBal;
+    private static readonly IMasterDataBal _masterDataBAL;
+    private static readonly RolesBAL _rolesBAL;
     private static IConfiguration _configuration;
     private static readonly ILogger _logger;
-    private static readonly string _filePath;
-    private static readonly string _locationFilePath;
-    private static readonly string _departmentFilePath;
-    private static readonly string _roleFilePath;
-    private static readonly string _managerFilePath;
-    private static readonly string _projectFilePath;
-    private static RolesBAL _rolesBAL;
+    private static readonly IConsole _console;
+    private static readonly IJsonHelper _jsonHelper;
     
     static Program()
     {
         BuildConfiguration();
-        _logger = new ConsoleLogger();
-        _filePath = _configuration?["EmployeeDataFilePath"] ?? "defaultFilePath";
-        _locationFilePath = _configuration?["LocationDataFilePath"];
-        _departmentFilePath = _configuration?["DepartmentDataFilePath"];
-        _roleFilePath = _configuration?["RoleDataFilePath"];
-        _managerFilePath = _configuration?["ManagerDataFilePath"];
-        _projectFilePath = _configuration?["ProjectDataFilePath"];
-        _rolesBAL = new RolesBAL(new RolesDAL(_roleFilePath, _departmentFilePath));    
-        _employeeBal = new EmployeeBAL(new EmployeeDAL(_logger, _filePath, _locationFilePath, _departmentFilePath, _roleFilePath, _managerFilePath, _projectFilePath),_rolesBAL, _logger);
+        _console = new ConsoleWriter();
+        _jsonHelper = new JsonHelper();
+        _masterDataBAL = new MasterDataBAL(new MasterDataDAl(_configuration, _jsonHelper));
+        _rolesBAL = new RolesBAL(new RolesDAL(_configuration, _jsonHelper));    
+        _employeeBal = new EmployeeBAL(new EmployeeDAL(_jsonHelper, new MasterDataDAl(_configuration, _jsonHelper), new RolesDAL(_configuration, _jsonHelper), _configuration),_rolesBAL);
     }
     
     public static void Main(string[] args)
     {
         Parser.Default.ParseArguments<Options>(args)
-        .WithParsed(options =>
+        .WithParsed(option =>
         {
-            if(options.Add)
+            if(option.Add)
             {
-                if(_employeeBal.Add(GetEmployeeInputs()))
-                {
-                    _logger.LogSuccess("Succesfully Added ");
-                }
-                else
-                {
-                    _logger.LogError("Invalid");
-                }
+                AddEmployee();
             }
-            else if(options.Filter)
+            else if(option.Filter)
             {
                 FilterAndDisplay();
             }
-            else if(options.Edit != 0)
+            else if(option.Edit != 0)
             {
                 Update();
             }
-            else if (options.Delete != null && options.Delete.Any())
+            else if (option.Delete != null && option.Delete.Any())
             {
-                if(_employeeBal.Delete(options.Delete))
-                {
-                    _logger.LogSuccess("Deleted Successfully");
-                }
-                else
-                {
-                    _logger.LogSuccess("Cannot find Employee");
-                }
+                DeleteEmployee(option);
             }
-            else if(options.Display)
+            else if(option.Display)
             {
                 List<Employee> employees = _employeeBal.GetAllEmployees();
                 DisplayEmployee(employees);
             }
-           else if (options.AddRole)
+            else if (option.AddRole)
             {
-                if (options.RoleName == null || options.DepartmentId == 0)
-                {
-                    _logger.LogError("Role ID and Department ID are required");
-                }
-                else
-                {
-                    AddOrUpdateRole(options.DepartmentId, options.RoleName);
-                    _logger.LogSuccess("Added role "+options.RoleName+" to department");
-                }
+                AddRole(option);
             }
-            else if(options.DisplayRoles)
+            else if(option.DisplayRoles)
             {
                 DisplayAllRoles();
             }
             else
             {
-                _logger.LogError("Invalid Command");
+                _console.PrintError("Invalid Command");
             }
         });
     }
@@ -100,70 +71,128 @@ public static class Program
     public static void BuildConfiguration()
     {
         _configuration = new ConfigurationBuilder()
-            .AddJsonFile("C:\\Users\\alekhya.n\\Desktop\\html\\Task5\\EmployeeManagementSystem\\appSettings.json", optional: true, reloadOnChange: true)
+            .AddJsonFile("C:\\Tasks\\Task5\\EmployeeManagementSystem\\appSettings.json", optional: true, reloadOnChange: true)
             .Build();
     } 
     
+    private static void AddEmployee()
+    {
+        try
+        {
+            if(_employeeBal.Add(GetEmployeeInputs()))
+            {
+                _console.PrintSuccess("Succesfully Added ");
+            }
+            else
+            {
+                _console.PrintError("Invalid");
+            }
+        }
+        catch (Exception ex)    
+        {
+            _console.PrintError($"Error occured while adding employee : {ex.Message}");
+        }
+    }
+    
+    private static void AddRole(Options option)
+    {
+        try
+        {
+            if (option.RoleName == null || option.DepartmentId == 0)
+            {
+                _console.PrintError("Role ID and Department ID are required");
+            }
+            else
+            {
+                AddOrUpdateRole(option.DepartmentId, option.RoleName);
+                _console.PrintSuccess("Added role "+option.RoleName+" to department");
+            }
+        }
+        catch (Exception ex)
+        {
+            _console.PrintError($"Error found while adding role : {ex.Message}");
+        }
+    }
+    
+    private static void DeleteEmployee(Options option)
+    {
+        try
+        {
+            if (_employeeBal.Delete(option.Delete))
+            {
+                _console.PrintSuccess("Deleted Successfully");
+            }
+            else
+            {
+                _console.PrintSuccess("Cannot find Employee");
+            }
+        }
+        catch (Exception ex)
+        {
+            _console.PrintError($"Error found while deleting : {ex.Message}");
+        }
+    }
+
     public static Employee GetEmployeeInputs()
     {
-        _logger.DisplayMsg("Employee Number: ");
+        _console.PrintMsg("Employee Number: ");
         int empNo = int.Parse(Console.ReadLine() ?? "0");
 
-        _logger.DisplayMsg("First Name: ");
+        _console.PrintMsg("First Name: ");
         string firstName = (Console.ReadLine() ?? "");
 
-        _logger.DisplayMsg("Last Name: ");
+        _console.PrintMsg("Last Name: ");
         string lastName = (Console.ReadLine() ?? "");
 
-        _logger.DisplayMsg("Date of Birth (MM-DD-YYYY): ");
+        _console.PrintMsg("Date of Birth (MM-DD-YYYY): ");
         DateTime dob = DateTime.Parse(Console.ReadLine() ?? "0000-00-00");
 
-        _logger.DisplayMsg("Email: ");
+        _console.PrintMsg("Email: ");
         string mail = (Console.ReadLine() ?? "");
 
-        _logger.DisplayMsg("Mobile Number: ");
+        _console.PrintMsg("Mobile Number: ");
         string mobileNumber = (Console.ReadLine() ?? "0");
 
-        _logger.DisplayMsg("Joining Date (MM-DD-YYYY): ");
+        _console.PrintMsg("Joining Date (MM-DD-YYYY): ");
         DateTime joiningDate = DateTime.Parse(Console.ReadLine() ?? "0000-00-00");
 
-        _logger.DisplayMsg("Location: (Hyderabad, US, UK)");
+        _console.PrintMsg("Location: (Hyderabad, US, UK)");
         string? locationInput = Console.ReadLine()?.Trim().ToLower();
-        Location location = _employeeBal.GetLocationFromInput(locationInput);
+        Location location = _masterDataBAL.GetLocationFromName(locationInput);
 
-        _logger.DisplayMsg("Department: (PE, IT)");
+        _console.PrintMsg("Department: (PE, IT)");
         string? departmentInput = Console.ReadLine()?.Trim().ToLower();
-        Department department = _employeeBal.GetDepartmentFromInput(departmentInput);
-        if (department == null)
-        {
-            _logger.LogError("Invalid department selected.");
-            return null; 
-        }
+        Department department = _masterDataBAL.GetDepartmentFromName(departmentInput);
+        // if (department == null)
+        // {
+        //     _console.PrintError("Invalid department selected.");
+        //     return null; 
+        // }
 
-        _logger.DisplayMsg("Select Role: ");
+        _console.PrintMsg("Select Role: ");
         List<Role> roles = _rolesBAL.GetAllRoles();
         foreach (var r in roles)
         {
             if (r.DepartmentId == department.Id)
             {
-                _logger.DisplayMsg(r.Name);
+                _console.PrintMsg(r.Name);
             }
         }
         string? roleInput = Console.ReadLine()?.Trim().ToLower();
         Role role = roles.FirstOrDefault(r => r.Name.ToLower() == roleInput);
         if (role == null)
         {
-            _logger.LogError("Invalid role selected.");
+            _console.PrintError("Invalid role selected.");
             return null;
         }
 
-        _logger.DisplayMsg("Manager: (Hasnu, Sandeep, Bhagvan)");
+        _console.PrintMsg("Manager: (Hasnu, Sandeep, Bhagvan)");
         string? managerInput = Console.ReadLine()?.Trim().ToLower();
-        Manager manager = _employeeBal.GetManagerFromInput(managerInput);
+        Manager manager = _masterDataBAL.GetManagerFromName(managerInput);
 
-        _logger.DisplayMsg("Project: (p1, p2)");
+        _console.PrintMsg("Project: (p1, p2)");
         string? projectInput = Console.ReadLine()?.Trim().ToLower();
-        Project project = _employeeBal.GetProjectFromInput(projectInput);
+        Project project = _masterDataBAL.GetProjectFromName(projectInput);
 
         Employee employee = new Employee
         {
@@ -187,7 +216,7 @@ public static class Program
     {
         if (employees.Count == 0)
         {
-            _logger.LogError("No employees found");
+            _console.PrintError("No employees found");
             return;
         }
         foreach(var employee in employees)
@@ -200,116 +229,122 @@ public static class Program
             stringBuilder.AppendLine("MobileNumber : " + employee.MobileNumber);
             stringBuilder.AppendLine("JoiningDate : " + employee.JoiningDate);
 
-            var location = _employeeBal.GetLocationById(employee.LocationId); 
+            var location = _masterDataBAL.GetLocationById(employee.LocationId); 
+
             if (location != null)
             {
                 stringBuilder.AppendLine("Location: " + location.Name);
             }
-            var department = _employeeBal.GetDepartmentById(employee.DepartmentId); 
+            var department = _masterDataBAL.GetDepartmentById(employee.DepartmentId); 
             if (department != null)
             {
                 stringBuilder.AppendLine("Department: " + department.Name);
             }
-            var role = _employeeBal.GetRoleById(employee.RoleId); 
+            var role = _rolesBAL.GetRoleById(employee.RoleId); 
             if (role != null)
             {
                 stringBuilder.AppendLine("Role: " + role.Name);
             }
-            var manager = _employeeBal.GetManagerById(employee.ManagerId); 
+            var manager = _masterDataBAL.GetManagerById(employee.ManagerId); 
             if (manager != null)
             {
                 stringBuilder.AppendLine("Manager: " + manager.Name);
             }
-            var project = _employeeBal.GetProjectById(employee.ProjectId); 
+            var project = _masterDataBAL.GetProjectById(employee.ProjectId); 
             if (project != null)
             {
                 stringBuilder.AppendLine("Project: " + project.Name);
             }
-            _logger.LogInfo(stringBuilder.ToString());
+            _console.PrintMsg(stringBuilder.ToString());
         }
     } 
 
     public static void FilterAndDisplay()
     {
-        _logger.DisplayMsg("Enter Alphabet");
+        _console.PrintMsg("Enter Alphabet");
         string alphabetFilter = Console.ReadLine();
-    
-        _logger.DisplayMsg("Enter Location");
-        string locationFilter = Console.ReadLine();
 
-        _logger.DisplayMsg("Enter Department");
+        _console.PrintMsg("Enter Location");
+        string locationFilter = Console.ReadLine();
+        var location = _masterDataBAL.GetLocationFromName(locationFilter);
+        int? locationId = location?.Id;
+
+        _console.PrintMsg("Enter Department");
         string departmentFilter = Console.ReadLine();
-    
-        _logger.DisplayMsg("Enter EmpNo to search");
+        var department = _masterDataBAL.GetDepartmentFromName(departmentFilter);
+        int? departmentId = department?.Id;
+
+        _console.PrintMsg("Enter EmpNo to search");
         string empNoFilterString = Console.ReadLine(); 
         int? empNoFilter = null;
         if (!string.IsNullOrEmpty(empNoFilterString) && int.TryParse(empNoFilterString, out int empNo))
         {
             empNoFilter = empNo;
-        }
-
+        }  
+        
         EmployeeFilter filters = new EmployeeFilter
         {
             FirstName = alphabetFilter,
-            LocationName = locationFilter,
-            DepartmentName = departmentFilter,
+            LocationId = locationId,
+            DepartmentId = departmentId,
             EmpNo = empNoFilter 
         };
+        
         List<Employee> filteredEmployees = _employeeBal.Filter(filters);
-        _logger.LogInfo("Employees found : ");
+        _console.PrintMsg("Employees found : ");
         DisplayEmployee(filteredEmployees);
-        _logger.LogSuccess("Filtered Successfully");
-    }  
+        _console.PrintSuccess("Filtered Successfully");
+    }
 
     public static void Update()
     {
-        _logger.DisplayMsg("Employee Number: ");
+        _console.PrintMsg("Employee Number: ");
         int empNo = int.Parse(Console.ReadLine()?? "0" );
 
         Employee existingEmployee = _employeeBal.GetAllEmployees().FirstOrDefault(emp => emp.EmpNo == empNo);
         if (existingEmployee == null)
         {
-            _logger.LogError("Employee not found.");
+            _console.PrintError("Employee not found.");
             return;
         }
 
-        _logger.DisplayMsg("First Name: ");
+        _console.PrintMsg("First Name: ");
         string firstName = (Console.ReadLine()?? "");
 
-        _logger.DisplayMsg("Last Name: ");
+        _console.PrintMsg("Last Name: ");
         string lastName = (Console.ReadLine()?? "");
 
-        _logger.DisplayMsg("Date of Birth (MM-DD-YYYY): ");
+        _console.PrintMsg("Date of Birth (MM-DD-YYYY): ");
         DateTime dob = DateTime.Parse(Console.ReadLine() ?? "0000-00-00");
 
-        _logger.DisplayMsg("Email: ");
+        _console.PrintMsg("Email: ");
         string mail = (Console.ReadLine()?? "");
 
-        _logger.DisplayMsg("Mobile Number: ");
+        _console.PrintMsg("Mobile Number: ");
         string mobileNumber = (Console.ReadLine() ?? "0");
 
-        _logger.DisplayMsg("Joining Date (MM-DD-YYYY): ");
+        _console.PrintMsg("Joining Date (MM-DD-YYYY): ");
         DateTime joiningDate = DateTime.Parse(Console.ReadLine() ?? "0000-00-00");
 
-        _logger.DisplayMsg("Location: (Hyderabad, US, UK)");
+        _console.PrintMsg("Location: (Hyderabad, US, UK)");
         string? locationInput = Console.ReadLine()?.Trim().ToLower();
-        Location location = _employeeBal.GetLocationFromInput(locationInput);
+        Location location = _masterDataBAL.GetLocationFromName(locationInput);
 
-        _logger.DisplayMsg("Department: (PE, IT)");
+        _console.PrintMsg("Department: (PE, IT)");
         string? departmentInput = Console.ReadLine()?.Trim().ToLower();
-        Department department = _employeeBal.GetDepartmentFromInput(departmentInput);
+        Department department = _masterDataBAL.GetDepartmentFromName(departmentInput);
 
-        _logger.DisplayMsg("Role: (Intern, Developer, Admin)");
+        _console.PrintMsg("Role: (Intern, Developer, Admin)");
         string? roleInput = Console.ReadLine()?.Trim().ToLower();
-        Role role = _employeeBal.GetRoleFromInput(roleInput);
+        Role role = _rolesBAL.GetRoleFromName(roleInput);
 
-        _logger.DisplayMsg("Manager: (Hasnu, Sandeep, Bhagvan)");
+        _console.PrintMsg("Manager: (Hasnu, Sandeep, Bhagvan)");
         string? managerInput = Console.ReadLine()?.Trim().ToLower();
-        Manager manager = _employeeBal.GetManagerFromInput(managerInput);
+        Manager manager = _masterDataBAL.GetManagerFromName(managerInput);
 
-        _logger.DisplayMsg("Project: (p1, p2)");
+        _console.PrintMsg("Project: (p1, p2)");
         string? projectInput = Console.ReadLine()?.Trim().ToLower();
-        Project project = _employeeBal.GetProjectFromInput(projectInput);
+        Project project = _masterDataBAL.GetProjectFromName(projectInput);
 
         Employee employee = new Employee
         {
@@ -358,7 +393,7 @@ public static class Program
                 DepartmentId = departmentId
             };
             roles.Add(role);
-            _rolesBAL.UpdateRolesFile(roles);
+            _rolesBAL.UpdateRoles(roles);
             return true;
         }
         catch

@@ -30,9 +30,4 @@ public class ConsoleLogger : ILogger
         Console.WriteLine(message);
         Console.ResetColor();
     }
-   
-    private void SetConsoleColor(ConsoleColor color)
-    {
-        Console.ForegroundColor = color;
-    }
 }

@@ -6,6 +6,8 @@ public interface IRolesBAL
 {
     List<Role> GetAllRoles();
     Role GetRoleById(int roleId);
-    bool UpdateRolesFile(List<Role> roles);
+    Role GetRoleFromName(string roleInput);
+    bool AddRole(int departmentId, int roleId, string roleName);
+    bool UpdateRoles(List<Role> roles);
     List<Department> GetAllDepartments();
 }

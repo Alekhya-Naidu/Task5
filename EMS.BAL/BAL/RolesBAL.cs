@@ -16,6 +16,10 @@ public class RolesBAL : IRolesBAL
         return _rolesDAL.GetAllRoles();
     }
 
+    public Role GetRoleFromName(string roleInput)
+    {
+       return _rolesDAL.GetRoleFromName(roleInput);
+    }
     public Role GetRoleById(int roleId)
     {
         return _rolesDAL.GetRoleById(roleId);
@@ -26,9 +30,9 @@ public class RolesBAL : IRolesBAL
         return _rolesDAL.AddRole(departmentId, roleId, roleName);
     }
 
-    public bool UpdateRolesFile(List<Role> roles)
+    public bool UpdateRoles(List<Role> roles)
     {
-        return _rolesDAL.UpdateRolesFile(roles);
+        return _rolesDAL.UpdateRoles(roles);
     }
     
     public List<Department> GetAllDepartments()

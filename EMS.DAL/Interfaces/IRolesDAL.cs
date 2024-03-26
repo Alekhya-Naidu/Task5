@@ -5,7 +5,10 @@ namespace EmployeeManagement;
 public interface IRolesDAL
 {
     List<Role> GetAllRoles();
+    Role GetRoleFromName(string roleInput);
     Role GetRoleById(int roleId);
-    bool UpdateRolesFile(List<Role> roles);
+    int GetRoleId(Role role);
+    bool AddRole(int departmentId, int roleId, string roleName);
+    bool UpdateRoles(List<Role> roles);
     List<Department> GetAllDepartments();
 }
